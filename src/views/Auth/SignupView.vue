@@ -13,6 +13,7 @@ import { toTypedSchema } from '@vee-validate/zod'
 import * as z from 'zod'
 import { ref } from 'vue'
 import { useMutation } from '@tanstack/vue-query'
+import { NAME_REGEX, PASSWORD_REGEX } from '@/constants/regex'
 
 const router = useRouter()
 const { toast } = useToast()
@@ -45,26 +46,23 @@ const { isPending, isError, error, isSuccess, mutate } = useMutation({
   }
 })
 
-const nameRegex = /^[a-zA-Z ]+$/
-const passwordRegex = /^(?=.*[\d])(?=.*[!@#$%^&*])[\w!@#$%^&*]{8,20}$/
-
 const validationSchema = toTypedSchema(
   z.object({
     firstName: z
       .string()
       .min(1, 'First name is required')
       .max(20, 'Max 20 characters')
-      .regex(nameRegex, 'Only letters allowed'),
+      .regex(NAME_REGEX, 'Only letters allowed'),
     lastName: z
       .string()
       .min(1, 'Last name is required')
       .max(20, 'Max 20 characters')
-      .regex(nameRegex, 'Only letters allowed'),
+      .regex(NAME_REGEX, 'Only letters allowed'),
     email: z.string().email('Invalid email'),
     password: z
       .string()
       .regex(
-        passwordRegex,
+        PASSWORD_REGEX,
         'Password must be 8-20 characters, include a number and a special character'
       )
   })

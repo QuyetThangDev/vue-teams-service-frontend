@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label'
 import { RouterLink, useRouter } from 'vue-router'
 import { useToast } from '@/components/ui/toast/use-toast'
 import { useUserStore } from '@/stores/userStore'
+import { PASSWORD_REGEX } from '@/constants/regex'
 
 const { toast } = useToast()
 const router = useRouter()
@@ -29,9 +30,10 @@ const { isPending, isError, error, isSuccess, mutate } = useMutation({
       title: 'Login successful',
       description: 'You have successfully logged in.'
     })
-    router.push({ name: 'Home' })
+    router.push({ name: 'Dashboard' })
   },
-  onError: () => {
+  onError: (data: any) => {
+    console.log(data)
     toast({
       title: 'Login failed',
       description: 'Invalid email or password.',
@@ -40,15 +42,13 @@ const { isPending, isError, error, isSuccess, mutate } = useMutation({
   }
 })
 
-const passwordRegex = /^(?=.*[\d])(?=.*[!@#$%^&*])[\w!@#$%^&*]{8,20}$/
-
 const validationSchema = toTypedSchema(
   z.object({
     email: z.string().email('Invalid email'),
     password: z
       .string()
       .regex(
-        passwordRegex,
+        PASSWORD_REGEX,
         'Password must be 8-20 characters, include a number and a special character'
       )
   })

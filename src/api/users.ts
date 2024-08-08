@@ -16,5 +16,5 @@ export async function getUsers(params: { enabled?: boolean; page: number; pageSi
 
 export async function changePassword(obj: { old_password: string; new_password: string }) {
   console.log(obj)
-  // return await http.put('/users/me/change_pwd', obj)
+  return await http.put('/users/me/change_pwd', obj)
 }

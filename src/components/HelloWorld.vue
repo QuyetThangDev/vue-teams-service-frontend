@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { Button } from '@/components/ui/button'
-import LoginPage from './LoginPage.vue'
 defineProps<{
   msg: string
 }>()

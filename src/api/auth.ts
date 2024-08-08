@@ -22,10 +22,15 @@ export async function forgotPassword(email: string) {
 }
 
 export async function resetPassword(obj: { token: string; new_password: string }) {
+  console.log(obj)
   return await http.post('/auth/reset_pwd', obj)
 }
 
 export async function updateUser(obj: { first_name?: string; last_name?: string }) {
-  console.log('Check: ', obj)
   return await http.patch('/users/me', obj)
+}
+
+export async function deleteUser() {
+  console.log('User deleted')
+  // return await http.delete('/users/me')
 }

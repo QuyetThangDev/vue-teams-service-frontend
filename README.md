@@ -50,4 +50,3 @@ pnpm lint
 # tbe_frontend
 # tbe_frontend
 # tbe_frontend
-# vue-teams-service-frontend

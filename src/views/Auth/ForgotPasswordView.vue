@@ -97,7 +97,7 @@ const onSubmit = handleSubmit((values) => {
             <div class="grid items-center justify-center gap-4">
               <Button class="max-w-[120px]" type="submit" :disabled="isPending">
                 <LoaderCircle v-if="isPending" class="w-4 h-4 mr-2 animate-spin" />
-                <RouterLink to="/login"> Back to login</RouterLink>
+                <RouterLink to="/auth/login"> Back to login</RouterLink>
               </Button>
             </div>
           </CardContent>

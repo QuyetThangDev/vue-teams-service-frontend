@@ -1,17 +1,26 @@
 <template>
   <div>
     <Card class="border border-gray-300 shadow-none">
-      <CardHeader class="flex flex-row items-center gap-4 p-6 border-b">
-        <!-- <Avatar class="w-16 h-16 p-2 bg-gray-200">
-          <User class="text-gray-500 w-14 h-14" />
-        </Avatar> -->
+      <CardHeader class="flex flex-col items-start gap-4 p-4 border-b">
         <div class="flex flex-row items-center justify-between w-full gap-1 py-2">
-          <CardTitle class="text-gray-500 shadow-none"> Account Information </CardTitle>
-          <ChangePasswordDialog />
+          <div class="flex flex-col items-start gap-2">
+            <CardTitle> Teams </CardTitle>
+            <span class="text-sm text-gray-500">
+              The teams that are associated with your Viot account.
+            </span>
+          </div>
+          <DialogCreateTeam />
         </div>
       </CardHeader>
-      <CardContent class="flex flex-col gap-6 mt-6">
-        <span v-if="isLoading">
+      <CardContent class="flex flex-col mt-6">
+        <span v-if="isPending">
+          <LoadingSpinner />
+        </span>
+        <span v-else-if="isError">Error: {{ error!.message }}</span>
+        <!-- <TeamsList v-else-if="teams" :teams="teams" /> -->
+      </CardContent>
+      <!-- <CardContent class="flex flex-col mt-6">
+        <span v-if="isPending">
           <LoadingSpinner />
         </span>
         <span v-else-if="isError">Error: {{ error!.message }}</span>
@@ -66,16 +75,16 @@
               </div>
             </FormItem>
           </FormField>
-          <CardFooter class="flex justify-end w-full px-0 py-4 border-t">
-            <Button class="w-24" type="submit">
+          <div class="flex justify-end w-full">
+            <Button type="submit" :disabled="isUpdatePending">
               <span v-if="isUpdatePending">
                 <Loader2 class="w-4 h-4 animate-spin" />
               </span>
-              <span v-else>Submit</span>
+              <span v-else>Save changes</span>
             </Button>
-          </CardFooter>
+          </div>
         </form>
-      </CardContent>
+      </CardContent> -->
     </Card>
   </div>
 </template>
@@ -87,83 +96,102 @@ import { useMutation, useQuery } from '@tanstack/vue-query'
 import { useForm } from 'vee-validate'
 import * as z from 'zod'
 
-import { Card, CardContent, CardFooter, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 
 import { useToast } from '@/components/ui/toast'
-import { getCurrentUser } from '@/api/user'
+import { getCurrentUser } from '@/api/users'
 import { updateUser } from '@/api/auth'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { KeyRound } from 'lucide-vue-next'
-import ChangePasswordDialog from './ChangePasswordDialog.vue'
+import { NAME_REGEX } from '@/constants/regex'
+import DialogCreateTeam from './DialogCreateTeam.vue'
+import { getTeams } from '@/api/teams'
 
 const { toast } = useToast()
 
 const formSchema = toTypedSchema(
   z.object({
-    firstName: z.string().min(1, 'First name is required'),
-    lastName: z.string().min(1, 'Last name is required')
+    firstName: z
+      .string()
+      .min(1, 'Last name is required')
+      .max(20, 'Max 20 characters')
+      .regex(NAME_REGEX, 'Only letters allowed'),
+    lastName: z
+      .string()
+      .min(1, 'Last name is required')
+      .max(20, 'Max 20 characters')
+      .regex(NAME_REGEX, 'Only letters allowed')
   })
 )
 
 const {
-  isLoading,
+  isPending,
   isError,
-  data: currentUser,
-  error
+  data,
+  error,
+  refetch: refetchTeams
 } = useQuery({
-  queryKey: ['user'],
-  queryFn: getCurrentUser
+  queryKey: ['teams'],
+  queryFn: getTeams
 })
 
-const form = useForm({
-  initialValues: {
-    firstName: '',
-    lastName: ''
-  },
-  validationSchema: formSchema
-})
+// console.log('Check teams: ', teams.value.data)
 
-watch(currentUser, (newVal) => {
-  if (newVal) {
-    form.setValues({
-      firstName: newVal.data.first_name,
-      lastName: newVal.data.last_name
-    })
-  }
-})
+// const { handleSubmit, validate, resetForm } = useForm({
+//   initialValues: {
+//     firstName: '',
+//     lastName: ''
+//   },
+//   validationSchema: formSchema
+// })
 
-const onSubmit = form.handleSubmit((values) => {
-  mutate({
-    first_name: values.firstName,
-    last_name: values.lastName
-  })
-})
+// watch(currentUser, (newVal) => {
+//   if (newVal) {
+//     resetForm({
+//       values: {
+//         firstName: newVal.data.first_name,
+//         lastName: newVal.data.last_name
+//       }
+//     })
+//   }
+// })
 
-const {
-  isPending: isUpdatePending,
-  isError: isUpdateError,
+// const {
+//   isPending: isUpdatePending,
+//   isError: isUpdateError,
+//   error: updateError,
+//   isSuccess: isUpdateSuccess,
+//   mutate
+// } = useMutation({
+//   mutationFn: (user: { first_name: string; last_name: string }) => {
+//     console.log(user)
+//     return updateUser(user)
+//   },
+//   onSuccess: (data: any) => {
+//     toast({
+//       title: 'Update successful'
+//     })
+//   },
+//   onError: (error: any) => {
+//     toast({
+//       title: 'Update failed',
+//       description: error.message
+//     })
+//   }
+// })
 
-  error: updateError,
-  isSuccess: isUpdateSuccess,
-  mutate
-} = useMutation({
-  mutationFn: (user: { first_name: string; last_name: string }) => {
-    console.log(user)
-    return updateUser(user)
-  },
-  onSuccess: (data: any) => {
-    toast({
-      title: 'Update successful'
-    })
-  },
-  onError: (error: any) => {
-    toast({
-      title: 'Update failed',
-      description: error.message
-    })
-  }
-})
+// const onSubmit = handleSubmit(async (values) => {
+//   const isValid = await validate()
+//   if (isValid) {
+//     console.log(isValid)
+//     mutate({
+//       first_name: values.firstName,
+//       last_name: values.lastName
+//     })
+//   } else {
+//     return
+//   }
+// })
 </script>

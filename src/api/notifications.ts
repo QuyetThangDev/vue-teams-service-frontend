@@ -1,10 +1,9 @@
+import type { Notification } from '@/types/notification'
 import http from '@/utils/http'
 
-export function getNotification(): Promise<{
-  notifications: { id: number; time: string; content: string }[]
-}> {
+export function getNotification(): Promise<{ notifications: Notification[] }> {
   // Create an array of fake notifications
-  const notifications = [
+  const notifications: Notification[] = [
     {
       id: 1,
       time: '2024-07-31T09:00:00Z',
@@ -49,5 +48,5 @@ export function getNotification(): Promise<{
     { id: 20, time: '2024-08-01T04:00:00Z', content: 'System maintenance scheduled for tomorrow.' }
   ]
 
-  return { data: notifications }
+  return Promise.resolve({ notifications }) // Sửa lỗi tại đây
 }

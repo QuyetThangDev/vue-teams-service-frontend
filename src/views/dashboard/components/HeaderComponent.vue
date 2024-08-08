@@ -13,17 +13,16 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
-import { onMounted, ref } from 'vue'
-import { storeToRefs } from 'pinia'
-import { useUserStore } from '@/stores/userStore'
+import { onMounted, ref, watch } from 'vue'
 import { useToast } from '@/components/ui/toast'
 import { useMutation, useQuery } from '@tanstack/vue-query'
 import { logout } from '@/api/auth'
 import { RouterLink, useRouter } from 'vue-router'
 import { format } from 'date-fns'
+import { useUserStore } from '@/stores/userStore'
 
-import { getCurrentUser } from '@/api/user'
-import { getNotification } from '@/api/notification'
+import { getCurrentUser } from '@/api/users'
+import { getNotification } from '@/api/notifications'
 import TeamSwitcher from './TeamSwitcher.vue'
 
 interface Notification {
@@ -35,15 +34,23 @@ interface Notification {
 const notifications = ref<Notification[]>([])
 const { toast } = useToast()
 const router = useRouter()
+const userStore = useUserStore()
 
 const {
   isLoading,
   isError,
   data: currentUser,
-  error
+  error,
+  isSuccess
 } = useQuery({
   queryKey: ['user'],
   queryFn: getCurrentUser
+})
+
+watch(currentUser, (newVal) => {
+  if (newVal) {
+    userStore.setUserInfo(newVal.data)
+  }
 })
 
 const { mutate: handleLogout } = useMutation({
@@ -77,13 +84,15 @@ onMounted(() => {
 
 <template>
   <header
-    class="border-b border-b-gray-200 flex h-14 items-center justify-between gap-4 px-4 lg:h-[60px] lg:px-6"
+    class="border-b border-b-gray-200 flex h-14 items-center justify-between gap-4 px-4 lg:h-[60px] lg:px-4"
   >
+    <RouterLink to="/">
+      <div class="flex items-center justify-center bg-gray-100 rounded-full w-9 h-9">
+        <img src="@/assets/logo.svg" alt="logo" class="h-4" />
+      </div>
+    </RouterLink>
     <TeamSwitcher />
-    <a href="/" class="flex items-center justify-start gap-2 font-semibold lg:hidden">
-      <Logo class="object-contain w-12 h-8" />
-      <span class="text-lg font-bold">ProjectEnergyAdmin</span>
-    </a>
+
     <div class="relative flex-1 ml-auto grow-0">
       <Popover>
         <PopoverTrigger as-child>
@@ -128,20 +137,13 @@ onMounted(() => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>{{ currentUser.data.first_name }}</DropdownMenuLabel>
+        <DropdownMenuLabel>{{ currentUser!.data.first_name }}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem @click="() => $router.push({ name: 'OrganizationSettings' })">
           Dashboard
         </DropdownMenuItem>
         <DropdownMenuItem>
-          <RouterLink to="/setting" class="w-full"> Setting </RouterLink>
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          class="flex justify-between gap-1"
-          @click="() => $router.push({ name: 'OrganizationSettings' })"
-        >
-          Create Team
-          <CirclePlus class="w-3.5 h-3.5 justify-end" />
+          <RouterLink to="/account" class="w-full"> Account Settings </RouterLink>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem class="text-red-500 duration-300 hover:bg-red-100 bg-red-50">

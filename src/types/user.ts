@@ -5,5 +5,5 @@ export interface UserInfo {
   email: string
   role: string
   created_at: Date
-  updated_at: Date | null
+  updated_at?: Date
 }
