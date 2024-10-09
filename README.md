@@ -43,10 +43,3 @@ pnpm test:unit
 ```sh
 pnpm lint
 ```
-# tbe_frontend
-# tbe_frontend
-# tbe_frontend
-# tbe_frontend
-# tbe_frontend
-# tbe_frontend
-# tbe_frontend
